@@ -29,26 +29,6 @@ async function run() {
       })
      
     })
-
-    app.post('/login', (req, res) => {
-      const { email, password } = req.body; // Assuming the request body contains username and password fields
-    
-      // Perform server logic to check credentials
-      usersCollection.find({ "email":'emtiazpias22@gmail.com'}, (err, user) => {
-        if (err) {
-          console.error('Error finding user:', err);
-          res.status(500).json({ error: 'An error occurred' });
-        } else if (user) {
-          // User found, authentication successful
-          console.log('User authenticated:', user.username);
-          res.status(200).json({ message: 'Authentication successful' });
-        } else {
-          // User not found, authentication failed
-          console.log('Authentication failed');
-          res.status(401).json({ error: 'Authentication failed' });
-        }
-      });
-    });
     
     // my apis 
     console.log("db cnnected")
@@ -59,10 +39,9 @@ app.post("/signUp", (req, res) => {
 const user = req.body;
   usersCollection.insertOne(user).then((result,err) => {
     if (err) {
-      console.log(err,"err msg")
+ res.send(err);
     }
     else{
-console.log("n err")
 res.send(result.acknowledged);
     }
   
@@ -84,10 +63,25 @@ console.log(req.body);
 })
 
 //// find apis ////
-
-
-
-  } catch {
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // Find the user in the database
+    const user = await usersCollection.findOne({ email });
+    // Check if the user exists and the password is correct
+    if (user && user.password === password) {
+      // Successful login
+      res.send(user);
+    } else {
+      // Invalid credentials
+      res.send('Invalid username or password');
+    }
+  } catch (error) {
+    // Error occurred
+    res.status(500).json({ error: 'An error occurred' });
+  }
+  })
+} catch {
    console.log(err)
   }
   app.listen(5000, () => {
