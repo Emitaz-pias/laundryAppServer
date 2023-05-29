@@ -20,15 +20,10 @@ async function run() {
   try {
     await client.connect();
     const usersCollection= client.db("laundryApp").collection("users");
+    const ordersCollection= client.db("laundryApp").collection("orders");
+
     
-    // get all users
-    app.get("/user",(req,res)=>{
-      usersCollection.find({}).toArray((err, result) => {
-        console.log(result,err)
-        res.send(result)
-      })
-     
-    })
+   
     
     // my apis 
     console.log("db cnnected")
@@ -50,35 +45,52 @@ res.send(result.acknowledged);
 })
 //place order api
 app.post("/order", (req, res) => {
-  usersCollection.insertOne(req.body, (err, result) => {
+  ordersCollection.insertOne(req.body).then( (response, err) => {
     if (err) {
       console.error('Error inserting document:', err);
       res.status(500).json({ error: 'Please try again' });
     } else {
-      console.log('Document inserted:', result.insertedId);
+      console.log('Document inserted:', response.insertedId);
       res.status(201).json({ message: 'Congratulation your has placed successfully' });
     }
-})
-console.log(req.body);
-})
+})})
 
-//// find apis ////
+
+//// get/find apis ////
+ // get all orders
+ app.get("/getAllOrders", async (req, res) => {
+  try {
+    // Retrieve all orders from the database
+    const orders = await ordersCollection.find({}).toArray();
+    
+    // Send the orders as a response
+    res.json(orders);
+  } catch (error) {
+    // Error occurred
+    console.log(error);
+    res.status(500).json({ error: 'An error occurred, please try again later' });
+  }
+});
+
+
+// user login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     // Find the user in the database
     const user = await usersCollection.findOne({ email });
+
     // Check if the user exists and the password is correct
     if (user && user.password === password) {
       // Successful login
       res.send(user);
     } else {
       // Invalid credentials
-      res.send('Invalid username or password');
+      res.send('user not found');
     }
   } catch (error) {
     // Error occurred
-    res.status(500).json({ error: 'An error occurred' });
+    res.status(500).json({ error: 'An error occurred please try again later' });
   }
   })
 } catch {
