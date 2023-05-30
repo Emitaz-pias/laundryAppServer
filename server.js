@@ -93,6 +93,49 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: 'An error occurred please try again later' });
   }
   })
+  /// update api's
+
+  /// handle shipped orders
+  app.put("/orders/:orderId/shipped", (req, res) => {
+    const orderId = req.params.orderId;
+    // const objectId = new ObjectId(orderId);
+    console.log(orderId,'isorder id')
+    
+    // Update the order status in the database to pending
+    ordersCollection.updateOne(
+      { _id: new ObjectId(orderId) },
+      { $set: { status: "Shipped" } },
+      (err, result) => {
+        if (err) {
+          console.error("Error updating order status:", err);
+          res.status(500).json({ error: "An error occurred while updating order status" });
+        } else {
+          console.log(result,'inserted')
+          res.json({ message: "Order status updated to pending" ,result});
+        }
+      }
+    );
+  });
+  app.put("/orders/:orderId/delivered", (req, res) => {
+    const orderId = req.params.orderId;
+  /// handle deliverd orders 
+    // Update the order status in the database to delivered
+    ordersCollection.updateOne(
+      { _id: new ObjectId(orderId) },
+      { $set: { status: "Delivered" } },
+      (err, result) => {
+        if (err) {
+          console.error("Error updating order status:", err);
+          res.status(500).json({ error: "An error occurred while updating order status" });
+        } else {
+          res.json({ message: "Order status updated to delivered" });
+        }
+      }
+    );
+  });
+    
+  // 
+
 } catch {
    console.log(err)
   }
